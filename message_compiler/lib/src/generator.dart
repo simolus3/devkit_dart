@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:message_compiler/src/parser/type_parser.dart';
 import 'package:message_compiler/src/utils/annnotations.dart';
@@ -9,7 +10,10 @@ class CobiGenerator extends Generator {
     final parser = TypeParser();
 
     // library.classElements doesn't include enums
-    for (final clazz in library.element.units.expand((e) => e.types + e.enums)) {
+    final classes = library.element.units.expand((unit) {
+      return unit.types.cast<ClassElement>() + unit.enums;
+    });
+    for (final clazz in classes) {
       if (hasAnnotation(clazz, "CobiStruct")) {
         parser.findOrParse(clazz.type);
       }
@@ -53,7 +57,8 @@ class CobiGenerator extends Generator {
 
     parser.foundTypes.forEach((dartType, cobiType) {
       buffer.writeln("if (type == ${dartType.displayName}) {");
-      buffer.writeln("return ${parser.getNameOfParsingFunction(cobiType)}(payload);");
+      buffer.writeln(
+          "return ${parser.getNameOfParsingFunction(cobiType)}(payload);");
       buffer.writeln("}");
     });
     buffer.writeln("}");
@@ -64,7 +69,8 @@ class CobiGenerator extends Generator {
 
     parser.foundTypes.forEach((dartType, cobiType) {
       buffer.writeln("if (type == ${dartType.displayName}) {");
-      buffer.writeln("return ${parser.getNameOfWritingFunction(cobiType)}(payload);");
+      buffer.writeln(
+          "return ${parser.getNameOfWritingFunction(cobiType)}(payload);");
       buffer.writeln("}");
     });
 
@@ -72,5 +78,4 @@ class CobiGenerator extends Generator {
 
     return buffer.toString();
   }
-
 }

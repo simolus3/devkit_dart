@@ -7,6 +7,7 @@ part 'format.cobi.g.dart';
 
 const String specVersion = "0.44.0";
 
+// compiler expects the field to be named exactly like this
 const channels = {
   App.theme: Theme,
   App.textToSpeech: TextToSpeechContent,
@@ -52,6 +53,16 @@ const channels = {
   Devkit.close: bool,
   Devkit.overrideThumbControllerMapping: bool
 };
+
+/// The generator only generates types that are referenced in a struct. Bool
+/// isn't referenced in any entity, so we create a fake entity because I'm too
+/// lazy to fix the generator.
+@cobiEntity
+class _HackThatReferencesBool {
+  final bool wow;
+
+  _HackThatReferencesBool(this.wow);
+}
 
 /// A color
 @cobiEntity
@@ -101,6 +112,7 @@ class Theme {
   Theme(this.baseColor, this.identifier, this.bundleIdentifier, this.name,
       this.accentColor, this.backgroundColor, this.logoUrl);
 }
+
 
 @cobiEntity
 class TextToSpeechContent {

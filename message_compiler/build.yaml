@@ -9,7 +9,6 @@ builders:
     target: ":devkit"
     import: "package:message_compiler/message_compiler.dart"
     builder_factories: ["messageBuilder"]
-    # The `partId` argument to `SharedPartBuilder` is "tinano"
     build_extensions: {".dart": [".cobi_compiled.g.part"]}
     auto_apply: dependents
     build_to: cache

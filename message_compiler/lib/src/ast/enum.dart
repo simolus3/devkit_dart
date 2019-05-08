@@ -34,7 +34,6 @@ class ParsedCobiEnum extends CobiType {
     }
   }
 
-
 }
 
 class EnumValue {

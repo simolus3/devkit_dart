@@ -6,6 +6,25 @@ part of 'format.cobi.dart';
 // CobiGenerator
 // **************************************************************************
 
+bool _$parseCobiBool(dynamic data) {
+  return data as bool;
+}
+
+dynamic _$writeCobiBool(dynamic data) {
+  return data;
+}
+
+_HackThatReferencesBool _$parse_HackThatReferencesBool(dynamic data) {
+  final a0 = _$parseCobiBool(data["wow"]);
+  return _HackThatReferencesBool(a0);
+}
+
+dynamic _$write_HackThatReferencesBool(dynamic data) {
+  final obj = new JsObject(context["Object"] as JsFunction);
+  obj["wow"] = _$writeCobiBool(data.wow);
+  return obj;
+}
+
 int _$parseCobiInt(dynamic data) {
   return data as int;
 }
@@ -22,7 +41,7 @@ RgbColor _$parseRgbColor(dynamic data) {
 }
 
 dynamic _$writeRgbColor(dynamic data) {
-  final obj = new JsObject(context["Object"]);
+  final obj = new JsObject(context["Object"] as JsFunction);
   obj["red"] = _$writeCobiInt(data.red);
   obj["green"] = _$writeCobiInt(data.green);
   obj["blue"] = _$writeCobiInt(data.blue);
@@ -49,7 +68,7 @@ Theme _$parseTheme(dynamic data) {
 }
 
 dynamic _$writeTheme(dynamic data) {
-  final obj = new JsObject(context["Object"]);
+  final obj = new JsObject(context["Object"] as JsFunction);
   obj["baseColor"] = _$writeRgbColor(data.baseColor);
   obj["identifier"] = _$writeCobiString(data.identifier);
   obj["bundleIdentifier"] = _$writeCobiString(data.bundleIdentifier);
@@ -67,7 +86,7 @@ TextToSpeechContent _$parseTextToSpeechContent(dynamic data) {
 }
 
 dynamic _$writeTextToSpeechContent(dynamic data) {
-  final obj = new JsObject(context["Object"]);
+  final obj = new JsObject(context["Object"] as JsFunction);
   obj["content"] = _$writeCobiString(data.content);
   obj["language"] = _$writeCobiString(data.language);
   return obj;
@@ -80,7 +99,7 @@ ReadLaterItem _$parseReadLaterItem(dynamic data) {
 }
 
 dynamic _$writeReadLaterItem(dynamic data) {
-  final obj = new JsObject(context["Object"]);
+  final obj = new JsObject(context["Object"] as JsFunction);
   obj["title"] = _$writeCobiString(data.title);
   obj["url"] = _$writeCobiString(data.url);
   return obj;
@@ -94,7 +113,7 @@ ContactData _$parseContactData(dynamic data) {
 }
 
 dynamic _$writeContactData(dynamic data) {
-  final obj = new JsObject(context["Object"]);
+  final obj = new JsObject(context["Object"] as JsFunction);
   obj["phoneNumber"] = _$writeCobiString(data.phoneNumber);
   obj["email"] = _$writeCobiString(data.email);
   obj["url"] = _$writeCobiString(data.url);
@@ -116,7 +135,7 @@ Coordinate _$parseCoordinate(dynamic data) {
 }
 
 dynamic _$writeCoordinate(dynamic data) {
-  final obj = new JsObject(context["Object"]);
+  final obj = new JsObject(context["Object"] as JsFunction);
   obj["latitude"] = _$writeCobiDouble(data.latitude);
   obj["longitude"] = _$writeCobiDouble(data.longitude);
   return obj;
@@ -133,7 +152,7 @@ Location _$parseLocation(dynamic data) {
 }
 
 dynamic _$writeLocation(dynamic data) {
-  final obj = new JsObject(context["Object"]);
+  final obj = new JsObject(context["Object"] as JsFunction);
   obj["coordinate"] = _$writeCoordinate(data.coordinate);
   obj["altitude"] = _$writeCobiDouble(data.altitude);
   obj["bearing"] = _$writeCobiDouble(data.bearing);
@@ -225,7 +244,7 @@ Placemark _$parsePlacemark(dynamic data) {
 }
 
 dynamic _$writePlacemark(dynamic data) {
-  final obj = new JsObject(context["Object"]);
+  final obj = new JsObject(context["Object"] as JsFunction);
   obj["name"] = _$writeCobiString(data.name);
   obj["address"] = _$writeCobiString(data.address);
   obj["category"] = _$writePlacemarkCategory(data.category);
@@ -277,7 +296,7 @@ BatteryCondition _$parseBatteryCondition(dynamic data) {
 }
 
 dynamic _$writeBatteryCondition(dynamic data) {
-  final obj = new JsObject(context["Object"]);
+  final obj = new JsObject(context["Object"] as JsFunction);
   obj["batteryLevel"] = _$writeCobiInt(data.level);
   obj["state"] = _$writeBatteryState(data.state);
   return obj;
@@ -294,7 +313,7 @@ Route _$parseRoute(dynamic data) {
 }
 
 dynamic _$writeRoute(dynamic data) {
-  final obj = new JsObject(context["Object"]);
+  final obj = new JsObject(context["Object"] as JsFunction);
   obj["origin"] = _$writePlacemark(data.origin);
   obj["destination"] = _$writePlacemark(data.destination);
   obj["name"] = _$writeCobiString(data.name);
@@ -336,7 +355,7 @@ NavigationCommand _$parseNavigationCommand(dynamic data) {
 }
 
 dynamic _$writeNavigationCommand(dynamic data) {
-  final obj = new JsObject(context["Object"]);
+  final obj = new JsObject(context["Object"] as JsFunction);
   obj["action"] = _$writeNavigationAction(data.action);
   obj["destination"] = _$writeCoordinate(data.destination);
   return obj;
@@ -506,6 +525,12 @@ dynamic _$writeBikeType(dynamic data) {
 
 dynamic parseWithPath(dynamic payload, String path) {
   final type = channels[path];
+  if (type == bool) {
+    return _$parseCobiBool(payload);
+  }
+  if (type == _HackThatReferencesBool) {
+    return _$parse_HackThatReferencesBool(payload);
+  }
   if (type == int) {
     return _$parseCobiInt(payload);
   }
@@ -579,6 +604,12 @@ dynamic parseWithPath(dynamic payload, String path) {
 
 dynamic writeWithPath(dynamic payload, String path) {
   final type = channels[path];
+  if (type == bool) {
+    return _$writeCobiBool(payload);
+  }
+  if (type == _HackThatReferencesBool) {
+    return _$write_HackThatReferencesBool(payload);
+  }
   if (type == int) {
     return _$writeCobiInt(payload);
   }

@@ -33,7 +33,7 @@ class ParsedCobiStruct extends CobiType {
 
   @override
   void writeBodyOfSerializer(TypeParser parser, StringBuffer buf) {
-    buf.writeln("final obj = new JsObject(context[\"Object\"]);");
+    buf.writeln("final obj = new JsObject(context[\"Object\"] as JsFunction);");
     for (final p in properties) {
       final nameOfField = p.declaration.displayName;
       buf.writeln("obj[\"${p.jsonKey}\"] = "
