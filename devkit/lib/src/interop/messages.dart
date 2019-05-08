@@ -130,6 +130,10 @@ class MessageStore {
     return initCompleter.future;
   }
 
+  void fakeReceivedMessage(Message msg) {
+    _messages.add(msg);
+  }
+
 }
 
 /// Class that speaks to a native app.

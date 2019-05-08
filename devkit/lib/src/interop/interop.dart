@@ -1,4 +1,4 @@
-import 'package:devkit/src/boring/messages.dart';
+import 'package:devkit/src/interop/messages.dart';
 import 'package:devkit/src/spec/format.cobi.dart' as format;
 
 import 'dart:js';

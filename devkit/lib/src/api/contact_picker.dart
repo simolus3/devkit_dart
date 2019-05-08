@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:devkit/devkit.dart';
-import 'package:devkit/src/boring/messages.dart';
+import 'package:devkit/src/interop/messages.dart';
 import 'package:devkit/src/spec/properties.dart';
 
 class ContactResult {

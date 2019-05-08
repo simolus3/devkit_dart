@@ -11,8 +11,8 @@ library devkit;
 // for docs
 import 'package:devkit/src/api/cobi.dart';
 
-export 'package:devkit/src/spec/format.cobi.dart' hide writeWithPath, parseWithPath,
-channels, specVersion;
+export 'package:devkit/src/spec/format.cobi.dart'
+    hide writeWithPath, parseWithPath, channels, specVersion;
 
 export 'package:devkit/src/api/cobi.dart';
 export 'package:devkit/src/spec/context.dart';

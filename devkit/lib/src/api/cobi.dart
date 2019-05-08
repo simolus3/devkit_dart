@@ -1,8 +1,8 @@
 import 'package:devkit/devkit.dart';
 import 'package:devkit/src/api/contact_picker.dart';
 import 'package:devkit/src/api/fitness.dart';
-import 'package:devkit/src/boring/interop.dart';
-import 'package:devkit/src/boring/messages.dart';
+import 'package:devkit/src/interop/interop.dart';
+import 'package:devkit/src/interop/messages.dart';
 import 'package:devkit/src/spec/context.dart';
 import 'package:devkit/src/spec/format.cobi.dart';
 import 'package:devkit/src/spec/properties.dart';
@@ -14,9 +14,12 @@ import 'package:rxdart/rxdart.dart';
 /// features of the COBI.Bike system. It implements a high-level API to use
 /// all the features available and avoid common pitfalls.
 class Cobi {
-
   /// Singleton instance.
   static Cobi _instance;
+
+  /// Sends a fake message of the hub being connected because the simulator
+  /// doesn't.
+  static bool simulatorCompatibility = false;
 
   final MessageStore _msgs;
   BehaviorSubject<Optional<ConnectedHub>> _connectedHub;
@@ -32,8 +35,7 @@ class Cobi {
   /// Creates the singleton Cobi instance by launching the messenger that will
   /// communicate with the native application.
   factory Cobi() {
-    if (_instance != null)
-      return _instance;
+    if (_instance != null) return _instance;
 
     var messenger = JavaScriptMessageSender();
     var store = MessageStore(messenger);
@@ -65,10 +67,14 @@ class Cobi {
     final rawCtx = Uri.base.queryParameters["context"];
 
     switch (rawCtx) {
-      case "onRide": return Context.onRide;
-      case "onRideSettings": return Context.onRideSettings;
-      case "offRide": return Context.offRide;
-      case "offRideSettings": return Context.offRideSettings;
+      case "onRide":
+        return Context.onRide;
+      case "onRideSettings":
+        return Context.onRideSettings;
+      case "offRide":
+        return Context.offRide;
+      case "offRideSettings":
+        return Context.offRideSettings;
     }
 
     throw Exception("Unknown context $rawCtx");
@@ -83,62 +89,71 @@ class Cobi {
   Future<void> init(String token) async {
     await _msgs.init(token);
 
-    _connectedHub = BehaviorSubject(seedValue: Optional.empty());
-    _msgs.observeValuesOf<bool>(App.isHubConnected)
-      .listen((isConnected) {
-        if (isConnected) {
-          _connectedHub.add(Optional.of(ConnectedHub._(this)));
-        } else {
-          _connectedHub.add(Optional.empty());
-        }
+    _connectedHub = BehaviorSubject.seeded(Optional.empty());
+    _msgs.observeValuesOf<bool>(App.isHubConnected).listen((isConnected) {
+      if (isConnected) {
+        _connectedHub.add(Optional.of(ConnectedHub._(this)));
+      } else {
+        _connectedHub.add(Optional.empty());
+      }
     });
 
     // listen and update fitness data by combining the individual properties
-    _userFitness = Observable
-        .combineLatest7<num, num, bool, num, bool, num, bool, CurrentFitness>(
+    _userFitness = Observable.combineLatest7<num, num, bool, num, bool, num,
+            bool, CurrentFitness>(
         _msgs.observeValuesOf<num>(RideService.speed).startWith(0),
         _msgs.observeValuesOf<num>(RideService.userPower).startWith(0),
-        _msgs.observeValuesOf<bool>(RideService.userPowerAvailability)
+        _msgs
+            .observeValuesOf<bool>(RideService.userPowerAvailability)
             .startWith(false),
         _msgs.observeValuesOf<num>(RideService.heartRate).startWith(0),
-        _msgs.observeValuesOf<bool>(RideService.heartRateAvailability)
-            .startWith(false), 
+        _msgs
+            .observeValuesOf<bool>(RideService.heartRateAvailability)
+            .startWith(false),
         _msgs.observeValuesOf<num>(RideService.cadence).startWith(0),
-        _msgs.observeValuesOf<bool>(RideService.cadenceAvailability)
+        _msgs
+            .observeValuesOf<bool>(RideService.cadenceAvailability)
             .startWith(false),
         (speed, power, powerAv, heartRate, hrAv, cadence, cAv) {
-          final userPower = powerAv ? Optional.of(power) : Optional<num>.empty();
-          final userHeartRate = hrAv ? Optional.of(heartRate) : Optional<num>.empty();
-          final userCadence = cAv ? Optional.of(cadence) : Optional<num>.empty();
+      final userPower = powerAv ? Optional.of(power) : Optional<num>.empty();
+      final userHeartRate =
+          hrAv ? Optional.of(heartRate) : Optional<num>.empty();
+      final userCadence = cAv ? Optional.of(cadence) : Optional<num>.empty();
 
-          return CurrentFitness(speed, userPower, userHeartRate, userCadence);
-        }
-    );
+      return CurrentFitness(speed, userPower, userHeartRate, userCadence);
+    });
 
-    _averagedUserFitness = Observable
-        .combineLatest5<num, num, num, num, num, AveragedFitness>(
-        _msgs.observeValuesOf<num>(TourService.calories).startWith(0),
-        _msgs.observeValuesOf<num>(TourService.ascent).startWith(0),
-        _msgs.observeValuesOf<num>(TourService.ridingDistance).startWith(0),
-        _msgs.observeValuesOf<num>(TourService.ridingDuration).startWith(0),
-        _msgs.observeValuesOf<num>(TourService.averageSpeed).startWith(0),
-        (calories, ascent, ridingDistance, ridingDuration, averageSpeed) {
-          return AveragedFitness(
-            calories, ascent, ridingDistance, Duration(seconds: ridingDuration.round()),
-            averageSpeed
-          );
-        }
+    _averagedUserFitness =
+        Observable.combineLatest5<num, num, num, num, num, AveragedFitness>(
+            _msgs.observeValuesOf<num>(TourService.calories).startWith(0),
+            _msgs.observeValuesOf<num>(TourService.ascent).startWith(0),
+            _msgs.observeValuesOf<num>(TourService.ridingDistance).startWith(0),
+            _msgs.observeValuesOf<num>(TourService.ridingDuration).startWith(0),
+            _msgs.observeValuesOf<num>(TourService.averageSpeed).startWith(0),
+            (calories, ascent, ridingDistance, ridingDuration, averageSpeed) {
+      return AveragedFitness(
+        calories,
+        ascent,
+        ridingDistance,
+        Duration(seconds: ridingDuration.round()),
+        averageSpeed,
       );
+    });
 
     _picker = ContactPicker(_msgs);
 
     // TODO Might want to make this customizable, although there is no scenario
     // were you would not need this
     _msgs.write(Devkit.overrideThumbControllerMapping, true);
+
+    if (simulatorCompatibility) {
+      _msgs.fakeReceivedMessage(
+          Message<bool>(App.isHubConnected, Action.notify, true));
+    }
   }
 
   /// {@macro devkit_dart/themes}
-  /// This method will load the current theme from the app. If the theme is 
+  /// This method will load the current theme from the app. If the theme is
   /// already known, it will return immediately.
   Future<Theme> loadAppTheme() => _msgs.replyFromCacheOrRead(App.theme);
 
@@ -164,7 +179,7 @@ class Cobi {
   /// and back on again when the bike comes to a rest. Note that the thumb
   /// controller will work in either case.
   Stream<bool> get touchInteractionEnabled =>
-    _msgs.observeValuesOf(App.touchInteractionEnabled);
+      _msgs.observeValuesOf(App.touchInteractionEnabled);
 
   /// Loads and reports the last known location of the hub. This value will be
   /// stored in a database on the phone, so that it can be available even when
@@ -177,6 +192,7 @@ class Cobi {
   /// behavior, you don't need to do anything. If you have hidden the clock
   /// previously with [hideClock], you can use this method to show it again.
   void showClock() => _msgs.write(App.clockVisible, true);
+
   /// In [Context.onRide], the app will show a clock in the top-right corner
   /// after a module is open for around 5 seconds. If you don't want the clock
   /// to show at all, you can use this method when starting your module (after
@@ -194,8 +210,8 @@ class Cobi {
   /// change to false after the sun has set and back to true once it has risen
   /// again. When calling this method, the current value will be reported as
   /// well.
-  Stream<bool> observeDarkness() => _msgs.observeValuesOf<bool>(App.isDark,
-      readFirst: true).distinct();
+  Stream<bool> observeDarkness() =>
+      _msgs.observeValuesOf<bool>(App.isDark, readFirst: true).distinct();
 
   /// Returns a stream of an optional hub to represent whether the app is
   /// connected to a COBI.Bike hub. If so, the returned hub can be used to
@@ -206,26 +222,27 @@ class Cobi {
   /// available, for instance due to missing permissions, an absent optional
   /// will be reported.
   Stream<Optional<Location>> get location => _ifLocationAvailable(() {
-    return _msgs.observeValuesOf(Mobile.location);
-  });
+        return _msgs.observeValuesOf(Mobile.location);
+      });
 
   /// Returns the current direction of the device in degrees, so that 0 degrees
   /// is true North. If the location cannot be obtained, for instance due to
   /// permission issues, an absent optional will be reported instead.
   Stream<Optional<num>> get direction => _ifLocationAvailable(() {
-    return _msgs.observeValuesOf(Mobile.heading);
-  });
+        return _msgs.observeValuesOf(Mobile.heading);
+      });
 
   /// Emits items from [ifAvailable] if the location is available and emits an
   /// absent Optional if it isn't.
   Stream<Optional<T>> _ifLocationAvailable<T>(Stream<T> ifAvailable()) {
-    return _msgs.observeValuesOf<bool>(Mobile.locationAvailability)
+    return _msgs
+        .observeValuesOf<bool>(Mobile.locationAvailability)
         .switchMap((available) {
-       if (available) {
-         return ifAvailable().map((data) => Optional.of(data));
-       } else {
-         return Observable.just(Optional.empty());
-       }
+      if (available) {
+        return ifAvailable().map((data) => Optional.of(data));
+      } else {
+        return Observable.just(Optional.empty());
+      }
     });
   }
 
@@ -236,7 +253,8 @@ class Cobi {
         .replyFromCacheOrRead<NavigationStatus>(NavigationService.status);
 
     if (status == NavigationStatus.navigating)
-      return Optional.of(await _msgs.replyFromCacheOrRead<Route>(NavigationService.route));
+      return Optional.of(
+          await _msgs.replyFromCacheOrRead<Route>(NavigationService.route));
 
     return Optional.empty();
   }
@@ -252,8 +270,8 @@ class Cobi {
   /// If there's a route active at the moment, this stream will update with the
   /// estimated time of arrival. If there is no route active, this stream won't
   /// emit any items.
-  Stream<DateTime> get eta =>
-      _msgs.observeValuesOf<int>(NavigationService.eta)
+  Stream<DateTime> get eta => _msgs
+      .observeValuesOf<int>(NavigationService.eta)
       .map((time) => DateTime.fromMillisecondsSinceEpoch(time * 1000));
 
   /// If there's a route active at the moment, this stream will update with the
@@ -330,7 +348,6 @@ class Cobi {
 /// Represents a COBI.Bike hub that is connected to the app at the moment. Can
 /// be used to query additional data like the bell or the thumb controller.
 class ConnectedHub {
-
   final Cobi _cobi;
 
   MessageStore get _msgs => _cobi._msgs;
@@ -378,5 +395,4 @@ class ConnectedHub {
   /// automatically updates whenever the charging level of the battery changes.
   Stream<BatteryCondition> observeBattery() =>
       _msgs.observeValuesOf(Battery.state);
-
 }
