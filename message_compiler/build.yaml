@@ -1,0 +1,17 @@
+targets:
+  $default:
+    builders:
+      devkit|message_compiler:
+        enabled: true
+
+builders:
+  message_compiler:
+    target: ":devkit"
+    import: "package:message_compiler/message_compiler.dart"
+    builder_factories: ["messageBuilder"]
+    # The `partId` argument to `SharedPartBuilder` is "tinano"
+    build_extensions: {".dart": [".cobi_compiled.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    # To copy the `.g.part` content into `.g.dart` in the source tree
+    applies_builders: ["source_gen|combining_builder"]
