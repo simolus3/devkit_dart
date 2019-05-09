@@ -6,6 +6,7 @@ import 'package:devkit/src/interop/messages.dart';
 import 'package:devkit/src/spec/context.dart';
 import 'package:devkit/src/spec/format.cobi.dart';
 import 'package:devkit/src/spec/properties.dart';
+import 'package:flutter_web/widgets.dart' show BuildContext;
 
 import 'package:optional/optional.dart';
 import 'package:rxdart/rxdart.dart';
@@ -29,6 +30,10 @@ class Cobi {
 
   ContactPicker _picker;
 
+  bool _initialized = false;
+  //// Whether [init] has been called and completed successfully.
+  bool get initialized => _initialized;
+
   /// private constructor
   Cobi._(this._msgs);
 
@@ -42,6 +47,10 @@ class Cobi {
 
     return Cobi._(store);
   }
+
+  /// Retrieves an appropiate instance for the widget with the given [context].
+  /// For this to work, a [DevKitApp] must be present.
+  static Cobi of(BuildContext context) {}
 
   /// The version of the protocol implemented by this library to talk to native
   /// COBI.Bike apps. The protocol is usually pretty tolerant to version
@@ -88,6 +97,7 @@ class Cobi {
   /// that you're allowed to listen and send messages.
   Future<void> init(String token) async {
     await _msgs.init(token);
+    _initialized = true;
 
     _connectedHub = BehaviorSubject.seeded(Optional.empty());
     _msgs.observeValuesOf<bool>(App.isHubConnected).listen((isConnected) {

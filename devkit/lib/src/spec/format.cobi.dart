@@ -1,4 +1,5 @@
 import 'package:devkit/src/spec/properties.dart';
+import 'package:flutter_web_ui/ui.dart';
 
 import 'annotations.dart';
 import 'dart:js';
@@ -19,22 +20,18 @@ const channels = {
   App.clockVisible: bool,
   App.isDark: bool,
   App.isHubConnected: bool,
-
   Hub.motorInterfaceReady: bool,
   Hub.bellRinging: bool,
   Hub.externalInterfaceAction: ThumbControllerAction,
   Hub.ambientLightState: AmbientLightState,
-
   Mobile.location: Location,
   Mobile.heading: num,
   Mobile.locationAvailability: bool,
-
   NavigationService.route: Route,
   NavigationService.eta: int,
   NavigationService.distanceToDestination: int,
   NavigationService.status: NavigationStatus,
   NavigationService.control: NavigationCommand,
-
   RideService.speed: num,
   RideService.userPower: num,
   RideService.userPowerAvailability: bool,
@@ -42,14 +39,10 @@ const channels = {
   RideService.heartRateAvailability: bool,
   RideService.cadence: num,
   RideService.cadenceAvailability: bool,
-
   BikeChannel.type: BikeType,
-
   User.temperatureUnit: TemperatureUnit,
   User.lengthUnit: LengthUnit,
-
   Battery.state: BatteryCondition,
-
   Devkit.close: bool,
   Devkit.overrideThumbControllerMapping: bool
 };
@@ -77,6 +70,8 @@ class RgbColor {
   final int blue;
 
   RgbColor(this.red, this.green, this.blue);
+
+  Color get dartColor => Color.fromARGB(0xFF, red, green, blue);
 }
 
 /// {@template devkit_dart/themes}
@@ -113,11 +108,10 @@ class Theme {
       this.accentColor, this.backgroundColor, this.logoUrl);
 }
 
-
 @cobiEntity
 class TextToSpeechContent {
-  String content;
-  String language;
+  final String content;
+  final String language;
 
   TextToSpeechContent(this.content, [this.language = "en-US"]);
 }
@@ -149,7 +143,6 @@ class ContactData {
 /// A location as received from GPS.
 @cobiEntity
 class Location {
-
   final Coordinate coordinate;
   final num altitude;
   final num bearing;
@@ -159,7 +152,6 @@ class Location {
 
   Location(this.coordinate, this.altitude, this.bearing, this.speed,
       this.horizontalAccuracy, this.verticalAccuracy);
-
 }
 
 /// A coordinate represented with with latitude and longitude.
@@ -205,10 +197,13 @@ enum PlacemarkCategory {
 class Placemark {
   /// The name of the place which got the placemark
   final String name;
+
   /// The address of the location at this placemark
   final String address;
+
   /// The category that describes this placemark best
   final PlacemarkCategory category;
+
   /// The geographic coordinate of this placemark.
   final Coordinate coordinate;
 
@@ -221,6 +216,7 @@ class BatteryCondition {
   /// The charging level of this battery, in percent from 0 to 100.
   @FromValue("batteryLevel")
   final int level;
+
   /// A broader interpretation of the current charging level.
   final BatteryState state;
 
@@ -266,13 +262,14 @@ enum AmbientLightState {
 }
 
 @cobiEntity
+
 /// A route, as chosen by the user. This object will not be recalculated during
 /// the ride and instead represents the route with start and end position as
 /// one object.
 class Route {
-
   /// The start position of this route
   final Placemark origin;
+
   /// The destination of this route
   final Placemark destination;
 
@@ -281,12 +278,14 @@ class Route {
 
   /// The total distance covered by this route
   final num distance;
+
   /// The elevation gain covered by this route. Note that this is not simply the
   /// height difference between [destination] and [origin]. Instead, for every
   /// "up and down" on the route, only the ups will be added.
   /// Check https://en.wikipedia.org/wiki/Cumulative_elevation_gain
   /// for details.
   final num elevationGain;
+
   /// An estimation on how long it's going to take to complete this route. A
   /// value that is continually updated can be obtained from the Cobi class.
   final num duration;
@@ -298,24 +297,23 @@ class Route {
 
   Route(this.origin, this.destination, this.name, this.distance,
       this.elevationGain, this.duration);
-
 }
 
 /// An enum to, broadly, describe what the navigation service is up to at the
 /// moment.
 @cobiEntity
 enum NavigationStatus {
-
   /// Navigation service in idle.
   @FromValue("NONE")
   none,
+
   /// Navigation service is currently calculating a rout
   @FromValue("CALCULATING")
   calculating,
+
   /// Navigation is active
   @FromValue("NAVIGATING")
   navigating
-
 }
 
 @cobiEntity
@@ -323,9 +321,11 @@ enum NavigationAction {
   /// Stops the current route
   @FromValue("STOP")
   stop,
+
   /// Calculates and plans a route
   @FromValue("PLAN")
   plan,
+
   /// Currently, same as [NavigationAction.plan]
   @FromValue("START")
   start
@@ -333,44 +333,39 @@ enum NavigationAction {
 
 @cobiEntity
 class NavigationCommand {
-
   final NavigationAction action;
   final Coordinate destination;
 
   NavigationCommand(this.action, this.destination);
-
 }
 
 @cobiEntity
 enum TemperatureUnit {
-
   /// A value to indicate that the user has set degrees celsius as their
   /// preferred measurement for temperature.
   @FromValue("CELSIUS")
   celsius,
+
   /// A value to indicate that the user has set degrees fahrenheit as their
   /// preferred measurement for temperature.
   @FromValue("FAHRENHEIT")
   fahrenheit
-
 }
 
 @cobiEntity
 enum LengthUnit {
-
   /// Indicates that the user prefers the metric system to measure distance.
   @FromValue("METRIC")
   metric,
+
   /// Indicates that the user prefers to use the imperial system to measure
   /// distance.
   @FromValue("IMPERIAL")
   imperial
-
 }
 
 @cobiEntity
 enum BikeType {
-
   @FromValue("CITY")
   city,
   @FromValue("MTB")
@@ -381,5 +376,4 @@ enum BikeType {
   urban,
   @FromValue("TREKKING")
   trekking
-
 }
